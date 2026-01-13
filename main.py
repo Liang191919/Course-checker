@@ -6,7 +6,7 @@ import discord
 import asyncio
 
 # Discord Bot Setup, avoir invité le bot au serveur avec https://discord.com/oauth2/authorize?client_id=1318745658936791131&permissions=2048&integration_type=0&scope=bot
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Jeton bot pour PolyCours#4894
+DISCORD_BOT_TOKEN = ""  # Jeton bot pour PolyCours#4894
 CHANNEL_ID = int()       # Remplacer avec le ID de la conversation. (Click droit sur le nom de la convo et "Copy Channel ID")
 LOG_CHANNEL_ID = int()
 USER_ID_TO_PING = int()   # Remplacer avec le ID du discord pour un ping. (Click droit sur le nom du compte et "Copy User ID")
