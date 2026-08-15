@@ -56,4 +56,4 @@ The current published image is:
 docker pull dragonbyte1/course-checker:latest
 ```
 
-This image can be used for deployment.
+This image can be used for deployment and needs to be run **with the appropriate environment variables**.
