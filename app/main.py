@@ -61,6 +61,18 @@ def require_course_list(name):
     return courses
 
 
+def get_email_recipients():
+    recipients = os.getenv("RECIPIENT_EMAILS")
+    if recipients and recipients.strip():
+        parsed = [email.strip() for email in recipients.split(",") if email.strip()]
+        if parsed:
+            return parsed
+
+    raise RuntimeError(
+        "Missing environment variable: RECIPIENT_EMAILS. Provide comma-separated email addresses."
+    )
+
+
 def require_bool_env(name, *, default=False):
     value = os.getenv(name)
     if value is None or value == "":
@@ -86,7 +98,7 @@ USE_EMAIL = require_bool_env("USE_EMAIL", default=False)
 if USE_EMAIL:
     SENDER_EMAIL = require_env("SENDER_EMAIL")
     SENDER_PASSWORD = require_env("SENDER_PASSWORD")
-    RECIPIENT_EMAIL = require_env("RECIPIENT_EMAIL")
+    RECIPIENT_EMAILS = get_email_recipients()
     DISCORD_BOT_TOKEN = None
     CHANNEL_ID = None
     LOG_CHANNEL_ID = None
@@ -131,22 +143,21 @@ async def send_discord_message(message, channel_id):
 def send_email_message(subject, body):
     if not USE_EMAIL:
         return
-    if not SENDER_EMAIL or not SENDER_PASSWORD or not RECIPIENT_EMAIL:
-        raise RuntimeError(
-            "Missing email variables: SENDER_EMAIL, SENDER_PASSWORD, or RECIPIENT_EMAIL"
-        )
+    if not SENDER_EMAIL or not SENDER_PASSWORD:
+        raise RuntimeError("Missing email variables: SENDER_EMAIL or SENDER_PASSWORD")
 
+    recipients = get_email_recipients()
     message = EmailMessage()
     message["Subject"] = subject
     message["From"] = SENDER_EMAIL
-    message["To"] = RECIPIENT_EMAIL
+    message["To"] = ", ".join(recipients)
     message.set_content(body)
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.send_message(message)
+        server.send_message(message, to_addrs=recipients)
 
-    logger.info(f"Email sent to {RECIPIENT_EMAIL}")
+    logger.info(f"Email sent to: {', '.join(recipients)}")
 
 
 async def wait_for_shutdown_or_timeout(duration):
