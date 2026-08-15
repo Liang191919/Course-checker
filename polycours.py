@@ -18,7 +18,7 @@ def getSessionId(user, password, birth):
         print(response.headers['set-cookie'][:44])
         return response.headers['set-cookie'][:44]
     else:
-        raise Exception('Mauvais utilisateur, mot de passe ou annee de naissance')
+        raise Exception('Mauvais utilisateur, mot de passe ou annee de naissance, ou dossier étudiant en maintenance.')
 
 def sendApiNotice(cours, nbPlaces, api_url, c_datetime):
     if (api_url == ""):
