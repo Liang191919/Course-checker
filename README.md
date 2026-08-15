@@ -39,3 +39,21 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
+
+## Docker image publishing and deployment
+
+The GitHub Actions pipeline pushes the image to Docker Hub as:
+
+```text
+<DOCKERHUB_USERNAME>/course-checker:latest
+```
+
+where `DOCKERHUB_USERNAME` is defined in the repository Actions variables.
+
+The current published image is:
+
+```bash
+docker pull dragonbyte1/course-checker:latest
+```
+
+This image can be used for deployment.
