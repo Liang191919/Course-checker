@@ -4,10 +4,22 @@ import polycours
 from datetime import datetime
 import discord
 import asyncio
+import logging
+import signal
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Discord Bot Setup, avoir invité le bot au serveur avec https://discord.com/oauth2/authorize?client_id=1318745658936791131&permissions=2048&integration_type=0&scope=bot
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
@@ -50,8 +62,9 @@ async def main():
             for cours in COURSES:
                 try:
                     nbPlaces = polycours.getNbPlaceDisponible(classes, cours)
-                    print(f"{cours} a {nbPlaces} place disponible")
-                    await send_discord_message(f"{cours} a {nbPlaces} place disponible", LOG_CHANNEL_ID)
+                    logger.info(f"{cours} a {nbPlaces} place disponible")
+                    if LOG_CHANNEL_ID:
+                        await send_discord_message(f"{cours} a {nbPlaces} place disponible", LOG_CHANNEL_ID)
                     if nbPlaces > 0:
                         c_datetime = datetime.now().strftime("%I:%M:%S %p")
                         if(cours[9] == "T"):
@@ -63,28 +76,42 @@ async def main():
                             message = f"<@{USER_ID_TO_PING}> {message}"
                         await send_discord_message(message, CHANNEL_ID)
                         COURSES.remove(cours)
-                except:
+                except Exception as e:
                     sessionToken = None
-                    print("Erreur de jeton, retentative de connection")
+                    logger.error(f"Erreur de jeton, retentative de connection: {e}")
                     break
-            print(f"Requete #{nombreEssaie}")
+            logger.info(f"Requete #{nombreEssaie}")
             if not sessionToken:
                 frequency = 1
             else:
                 frequency = random.randint(10, 30)
-            print(f"Recommence dans {frequency} secondes")
-            await send_discord_message(f"Requete #{nombreEssaie}", LOG_CHANNEL_ID)
+            logger.info(f"Recommence dans {frequency} secondes")
+            if LOG_CHANNEL_ID:
+                await send_discord_message(f"Requete #{nombreEssaie}", LOG_CHANNEL_ID)
             await asyncio.sleep(frequency)
-        except:
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification: {e}")
             sessionToken = None
-    print("Aucun cours restant")
+    logger.info("Aucun cours restant")
     await client.close()
 
 @client.event
 async def on_ready():
-    print(f"Bot connecté comme {client.user}")
+    logger.info(f"Bot connecté comme {client.user}")
     await main()
 
-client.run(DISCORD_BOT_TOKEN)
+async def graceful_shutdown():
+    """Gracefully shutdown the bot"""
+    logger.info("Shutting down bot gracefully...")
+    await client.close()
 
-main()
+def handle_signal(sig, frame):
+    """Handle SIGINT and SIGTERM signals"""
+    logger.info("Received shutdown signal")
+    asyncio.create_task(graceful_shutdown())
+
+# Register signal handlers for graceful shutdown
+signal.signal(signal.SIGINT, handle_signal)
+signal.signal(signal.SIGTERM, handle_signal)
+
+client.run(DISCORD_BOT_TOKEN)
