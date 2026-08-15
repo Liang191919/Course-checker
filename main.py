@@ -16,24 +16,54 @@ load_dotenv()
 # Configure logging
 configure_logging()
 
+
+def require_env(name):
+    value = os.getenv(name)
+    if value is None or value == "":
+        raise RuntimeError(f"Variable d'environnement manquante : {name}")
+    return value
+
+
+def require_int_env(name, *, optional=False):
+    value = os.getenv(name)
+    if value is None or value == "":
+        if optional:
+            return 0
+        raise RuntimeError(f"Variable d'environnement manquante : {name}")
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise RuntimeError(
+            f"Variable d'environnement invalide : {name}={value!r}. Elle doit être un entier."
+        ) from None
+
+
+def require_course_list(name):
+    raw_value = require_env(name)
+    courses = [course.strip() for course in raw_value.split(",") if course.strip()]
+    if not courses:
+        raise RuntimeError(
+            f"Variable d'environnement invalide : {name}. Aucune valeur fournie."
+        )
+    return courses
+
+
 # Discord Bot Setup, avoir invité le bot au serveur avec https://discord.com/oauth2/authorize?client_id=1318745658936791131&permissions=2048&integration_type=0&scope=bot
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-CHANNEL_ID = int(
-    os.getenv("CHANNEL_ID")
+DISCORD_BOT_TOKEN = require_env("DISCORD_BOT_TOKEN")
+CHANNEL_ID = require_int_env(
+    "CHANNEL_ID"
 )  # Remplacer avec le ID de la conversation. (Click droit sur le nom de la convo et "Copy Channel ID")
-LOG_CHANNEL_ID = (
-    int(os.getenv("LOG_CHANNEL_ID")) if os.getenv("LOG_CHANNEL_ID") else 0
+LOG_CHANNEL_ID = require_int_env(
+    "LOG_CHANNEL_ID", optional=True
 )  # Remplacer avec le ID de la conversation pour les logs. (Click droit sur le nom de la convo et "Copy Channel ID")
-USER_ID_TO_PING = int(
-    os.getenv("USER_ID_TO_PING")
+USER_ID_TO_PING = require_int_env(
+    "USER_ID_TO_PING"
 )  # Remplacer avec le ID du discord pour un ping. (Click droit sur le nom du compte et "Copy User ID")
-DOSSIER_USER = os.getenv("DOSSIER_USER")
-DOSSIER_PASS = os.getenv("DOSSIER_PASS")
-BIRTH = os.getenv("BIRTH")  # Format concaténé: 'année+mois+jour'
-COURSES = os.getenv(
-    "COURSES", "INF840201T"
-).split(
-    ","
+DOSSIER_USER = require_env("DOSSIER_USER")
+DOSSIER_PASS = require_env("DOSSIER_PASS")
+BIRTH = require_env("BIRTH")  # Format concaténé: 'année+mois+jour'
+COURSES = require_course_list(
+    "COURSES"
 )  # Liste de cours à rechercher. Format [sigle(INF2610) + groupe(01,02,...) + type(T = théorie, L = labo)]. Si le cours affiche -1 place disponible, le sigle est probablement invalide.
 
 intents = discord.Intents.default()
