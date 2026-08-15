@@ -68,9 +68,9 @@ async def main():
                     if nbPlaces > 0:
                         c_datetime = datetime.now().strftime("%I:%M:%S %p")
                         if(cours[9] == "T"):
-                            message = f"🎉 Le cours {cours[0:7]} groupe {cours[8:9]} section Théorie a {nbPlaces} place(s) disponible. {c_datetime}"
+                            message = f"🎉 Le cours {cours[0:7]} groupe {cours[8:9]} section Théorie a {nbPlaces} place(s) disponible. {c_datetime}\n⚠️ Ce cours ne sera plus suivi. Redémarrez le bot pour le surveiller à nouveau."
                         else:
-                            message = f"🎉 Le cours {cours[0:7]} groupe {cours[8:9]} section Labo a {nbPlaces} place(s) disponible. {c_datetime}"
+                            message = f"🎉 Le cours {cours[0:7]} groupe {cours[8:9]} section Labo a {nbPlaces} place(s) disponible. {c_datetime}\n⚠️ Ce cours ne sera plus suivi. Redémarrez le bot pour le surveiller à nouveau."
                         polycours.sendApiNotice(cours, nbPlaces, api_url, c_datetime)
                         if USER_ID_TO_PING:
                             message = f"<@{USER_ID_TO_PING}> {message}"
