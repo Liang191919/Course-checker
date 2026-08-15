@@ -39,6 +39,8 @@ or through Invoke:
 inv dev
 ```
 
+> If you change course settings or any other values in `.env`, restart the app for the new configuration to take effect.
+
 > There are some more commands available in `tasks.py`.
 
 ## Docker image publishing and deployment
