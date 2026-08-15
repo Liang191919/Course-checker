@@ -19,11 +19,10 @@ def getSessionId(user, password, birth):
         login_url, headers=login_headers, data=data, allow_redirects=False
     )
     if response.cookies.__contains__("JSESSIONID"):
-        print(response.headers["set-cookie"][:44])
         return response.headers["set-cookie"][:44]
     else:
         raise Exception(
-            "Mauvais utilisateur, mot de passe ou annee de naissance, ou dossier étudiant en maintenance."
+            "Mauvais utilisateur, mot de passe ou année de naissance, ou le dossier étudiant est en maintenance."
         )
 
 
@@ -38,9 +37,9 @@ def sendApiNotice(cours, nbPlaces, api_url, c_datetime):
         "accept-language": "en-US,en;q=0.8",
     }
     if cours[9] == "T":
-        data = f"CONTENT &text=Le cours {cours[0:7]} groupe {cours[8:9]} section Théorie a {nbPlaces} place disponible. {c_datetime}"
+        data = f"CONTENT &text=Le cours {cours[0:7]} groupe {cours[8:9]} section Théorie a {nbPlaces} place(s) disponible(s). {c_datetime}"
     else:
-        data = f"CONTENT &text=Le cours {cours[0:7]} groupe {cours[8:9]} section Labo a {nbPlaces} place disponible. {c_datetime}"
+        data = f"CONTENT &text=Le cours {cours[0:7]} groupe {cours[8:9]} section Labo a {nbPlaces} place(s) disponible(s). {c_datetime}"
     response = requests.post(api_url, headers=coursdispo_headers, data=data)
 
 
