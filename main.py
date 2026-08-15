@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import random
 import signal
@@ -9,17 +8,13 @@ import discord
 from dotenv import load_dotenv
 
 import polycours
+from logging_config import configure_logging, logger
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
+configure_logging()
 
 # Discord Bot Setup, avoir invité le bot au serveur avec https://discord.com/oauth2/authorize?client_id=1318745658936791131&permissions=2048&integration_type=0&scope=bot
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
