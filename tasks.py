@@ -11,7 +11,7 @@ Usage:
 
 from invoke import task
 
-from logging_config import configure_logging, logger
+from app.logging_config import configure_logging, logger
 
 configure_logging()
 
@@ -20,7 +20,7 @@ configure_logging()
 def dev(c):
     """Run bot locally with Python."""
     logger.info("🚀 Running bot locally...")
-    c.run("python main.py")
+    c.run("python -m app.main")
 
 
 @task

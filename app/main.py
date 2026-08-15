@@ -8,8 +8,8 @@ from email.message import EmailMessage
 import discord
 from dotenv import load_dotenv
 
-import polycours
-from logging_config import configure_logging, logger
+from . import polycours
+from .logging_config import configure_logging, logger
 
 # Load environment variables from .env file
 load_dotenv()
