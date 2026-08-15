@@ -6,6 +6,7 @@ Usage:
     inv dev        - Run bot locally with Python
     inv build      - Build Docker image
     inv start      - Run Docker container
+    inv format     - Run Ruff format on the project
 """
 
 from invoke import task
@@ -32,3 +33,10 @@ def start(c):
     build(c)
     print("🚀 Running container...")
     c.run("docker run --env-file .env course-checker")
+
+
+@task
+def format(c):
+    """Format project files with Ruff."""
+    print("🔧 Formatting project with Ruff...")
+    c.run("ruff format .")
