@@ -33,11 +33,19 @@ COURSES = os.getenv("COURSES", "INF840201T").split(",") # Liste de cours à rech
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
+shutdown_event = asyncio.Event()
 
 async def send_discord_message(message, channel_id):
     channel = client.get_channel(channel_id)
     if channel:
         await channel.send(message)
+
+async def wait_for_shutdown_or_timeout(duration):
+    try:
+        await asyncio.wait_for(shutdown_event.wait(), timeout=duration)
+        return True
+    except asyncio.TimeoutError:
+        return False
 
 async def main():
     # Pour l'envoie d'une notification par api. Garder "" si non applicable. Modifier la fonction sendApiNotice() si nécessaire
@@ -52,11 +60,13 @@ async def main():
     # autoInscription = False (À implémenter... si très demandé)
 
     sessionToken = None
+    retry_delay = 5
 
-    while True and COURSES:
+    while not shutdown_event.is_set() and COURSES:
         try:
             if not sessionToken:
                 sessionToken = polycours.getSessionId(DOSSIER_USER, DOSSIER_PASS, BIRTH)
+                retry_delay = 1
             nombreEssaie += 1
             classes = polycours.find_class(sessionToken)
             for cours in COURSES:
@@ -78,20 +88,30 @@ async def main():
                         COURSES.remove(cours)
                 except Exception as e:
                     sessionToken = None
+                    retry_delay = min(max(retry_delay, 5), 60)
                     logger.error(f"Erreur de jeton, retentative de connection: {e}")
                     break
             logger.info(f"Requete #{nombreEssaie}")
             if not sessionToken:
-                frequency = 1
+                frequency = retry_delay
             else:
                 frequency = random.randint(10, 30)
+                retry_delay = 1
             logger.info(f"Recommence dans {frequency} secondes")
             if LOG_CHANNEL_ID:
                 await send_discord_message(f"Requete #{nombreEssaie}", LOG_CHANNEL_ID)
-            await asyncio.sleep(frequency)
+            if await wait_for_shutdown_or_timeout(frequency):
+                logger.info("Arrêt demandé pendant le sommeil, fermeture du bot.")
+                break
         except Exception as e:
             logger.error(f"Erreur lors de la vérification: {e}")
             sessionToken = None
+            if shutdown_event.is_set():
+                break
+            logger.info(f"Nouvelle tentative dans {retry_delay} secondes")
+            if await wait_for_shutdown_or_timeout(retry_delay):
+                logger.info("Arrêt demandé pendant la relance, fermeture du bot.")
+                break
     logger.info("Aucun cours restant")
     await client.close()
 
@@ -103,12 +123,18 @@ async def on_ready():
 async def graceful_shutdown():
     """Gracefully shutdown the bot"""
     logger.info("Shutting down bot gracefully...")
+    shutdown_event.set()
     await client.close()
 
 def handle_signal(sig, frame):
     """Handle SIGINT and SIGTERM signals"""
     logger.info("Received shutdown signal")
-    asyncio.create_task(graceful_shutdown())
+    shutdown_event.set()
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(graceful_shutdown())
+    except RuntimeError:
+        pass
 
 # Register signal handlers for graceful shutdown
 signal.signal(signal.SIGINT, handle_signal)
