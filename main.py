@@ -4,16 +4,20 @@ import polycours
 from datetime import datetime
 import discord
 import asyncio
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Discord Bot Setup, avoir invité le bot au serveur avec https://discord.com/oauth2/authorize?client_id=1318745658936791131&permissions=2048&integration_type=0&scope=bot
-DISCORD_BOT_TOKEN = ""  # Jeton bot pour PolyCours#4894
-CHANNEL_ID = int()       # Remplacer avec le ID de la conversation. (Click droit sur le nom de la convo et "Copy Channel ID")
-LOG_CHANNEL_ID = int()
-USER_ID_TO_PING = int()   # Remplacer avec le ID du discord pour un ping. (Click droit sur le nom du compte et "Copy User ID")
-DOSSIER_USER = ""
-DOSSIER_PASS = ""
-BIRTH = "" # Format concatenation: 'annee+mois+jour'
-COURSES = [""] # Liste de cours a rechercher. Format [sigle(INF2610) + groupe(01,02,...) + type(T = théorie, L = labo)]. Si le cours affiche -1 place disponible, mauvais sigle.
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+CHANNEL_ID = int(os.getenv("CHANNEL_ID"))       # Remplacer avec le ID de la conversation. (Click droit sur le nom de la convo et "Copy Channel ID")
+LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID")) if os.getenv("LOG_CHANNEL_ID") else 0  # Remplacer avec le ID de la conversation pour les logs. (Click droit sur le nom de la convo et "Copy Channel ID")
+USER_ID_TO_PING = int(os.getenv("USER_ID_TO_PING"))   # Remplacer avec le ID du discord pour un ping. (Click droit sur le nom du compte et "Copy User ID")
+DOSSIER_USER = os.getenv("DOSSIER_USER")
+DOSSIER_PASS = os.getenv("DOSSIER_PASS")
+BIRTH = os.getenv("BIRTH") # Format concatenation: 'annee+mois+jour'
+COURSES = os.getenv("COURSES", "INF840201T").split(",") # Liste de cours à rechercher. Format [sigle(INF2610) + groupe(01,02,...) + type(T = théorie, L = labo)]. Si le cours affiche -1 place disponible, mauvais sigle.
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
